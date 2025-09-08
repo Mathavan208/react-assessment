@@ -69,8 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         totalScore: 0,
         createdAt: new Date().toISOString()
       };
-
-      await setDoc(doc(db, 'users', user.uid), profile);
       setUserProfile(profile);
       toast.success('Logged in successfully!');
     } catch (error: any) {
