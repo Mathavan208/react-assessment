@@ -1,0 +1,1070 @@
+Here are the complete solutions for all 10 React questions:
+
+## **Question 1: Hello World Component**
+
+```javascript
+import React from 'react';
+
+export default function HelloWorld() {
+  return (
+    <div>
+      <h1>Hello World</h1>
+      <p>Welcome to React!</p>
+    </div>
+  );
+}
+```
+
+## **Question 2: Interactive Counter**
+
+```javascript
+import React, { useState } from 'react';
+
+export default function Counter() {
+  // Add state for count
+  const [count, setCount] = useState(0);
+  
+  // Add event handlers
+  const increment = () => {
+    setCount(count + 1);
+  };
+  
+  const decrement = () => {
+    setCount(count - 1);
+  };
+  
+  const reset = () => {
+    setCount(0);
+  };
+  
+  return (
+    <div>
+      {/* Display current count */}
+      <h2>Count: {count}</h2>
+      
+      {/* Add increment button */}
+      <button onClick={increment}>+</button>
+      
+      {/* Add decrement button */}
+      <button onClick={decrement}>-</button>
+      
+      {/* Add reset button */}
+      <button onClick={reset}>Reset</button>
+    </div>
+  );
+}
+```
+
+## **Question 3: Simple Todo List**
+
+```javascript
+import React, { useState } from 'react';
+
+export default function TodoList() {
+  // Add state for todos array and input
+  const [todos, setTodos] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  
+  // Add function to handle adding todos
+  const addTodo = () => {
+    if (inputValue.trim()) {
+      setTodos([...todos, { id: Date.now(), text: inputValue }]);
+      setInputValue('');
+    }
+  };
+  
+  // Add function to remove todos
+  const removeTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+  
+  return (
+    <div>
+      <h2>My Todo List</h2>
+      
+      {/* Add input and button */}
+      <div>
+        <input 
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Add a todo..."
+          onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+        />
+        <button onClick={addTodo}>Add</button>
+      </div>
+      
+      {/* Display list of todos */}
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id} onClick={() => removeTodo(todo.id)}>
+            {todo.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## **Question 4: User Profile Form**
+
+```javascript
+import React, { useState } from 'react';
+
+export default function UserProfile() {
+  // Add state for form fields
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [age, setAge] = useState('');
+  
+  // Add state for submitted data
+  const [submittedData, setSubmittedData] = useState(null);
+  
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmittedData({ name, email, age });
+  };
+  
+  return (
+    <div>
+      <h2>User Profile Form</h2>
+      
+      {/* Add form with inputs */}
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Name:</label>
+          <input 
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+        
+        <div>
+          <label>Email:</label>
+          <input 
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        
+        <div>
+          <label>Age:</label>
+          <input 
+            type="number"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            required
+          />
+        </div>
+        
+        <button type="submit">Submit</button>
+      </form>
+      
+      {/* Display submitted data */}
+      {submittedData && (
+        <div>
+          <h3>Profile Information:</h3>
+          <p>Name: {submittedData.name}</p>
+          <p>Email: {submittedData.email}</p>
+          <p>Age: {submittedData.age}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## **Question 5: Login Status Display**
+
+```javascript
+import React, { useState } from 'react';
+
+export default function LoginStatus() {
+  // Add state for login status
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Add toggle function
+  const toggleLogin = () => {
+    setIsLoggedIn(!isLoggedIn);
+  };
+  
+  return (
+    <div>
+      {/* Conditional rendering based on login status */}
+      {isLoggedIn ? (
+        <div>
+          <h2>Welcome back!</h2>
+          <button onClick={toggleLogin}>Logout</button>
+        </div>
+      ) : (
+        <div>
+          <h2>Please log in</h2>
+          <button onClick={toggleLogin}>Login</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## **Question 6: Product Catalog**
+
+```javascript
+import React from 'react';
+
+const products = [
+  { id: 1, name: 'Laptop', price: 999, category: 'Electronics' },
+  { id: 2, name: 'Coffee Mug', price: 15, category: 'Kitchen' },
+  { id: 3, name: 'Book', price: 25, category: 'Education' }
+];
+
+export default function ProductCatalog() {
+  return (
+    <div>
+      <h2>Product Catalog</h2>
+      
+      {/* Render products list */}
+      <div>
+        {products.map(product => (
+          <div key={product.id}>
+            <h3>{product.name}</h3>
+            <p>${product.price}</p>
+            <span>{product.category}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## **Question 7: Color Picker Component**
+
+```javascript
+import React, { useState } from 'react';
+
+// Child component
+function ColorDisplay({ color }) {
+  return (
+    <div 
+      style={{
+        width: '200px',
+        height: '100px',
+        backgroundColor: color || 'white',
+        border: '2px solid #333',
+        borderRadius: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 auto'
+      }}
+    >
+      {color ? `Selected: ${color}` : 'Select a color'}
+    </div>
+  );
+}
+
+// Parent component
+export default function ColorPicker() {
+  // Add state for selected color
+  const [selectedColor, setSelectedColor] = useState('');
+  
+  return (
+    <div>
+      <h2>Color Picker</h2>
+      
+      {/* Add color buttons */}
+      <div>
+        <button 
+          onClick={() => setSelectedColor('red')}
+          style={{ backgroundColor: 'red', color: 'white' }}
+        >
+          Red
+        </button>
+        <button 
+          onClick={() => setSelectedColor('blue')}
+          style={{ backgroundColor: 'blue', color: 'white' }}
+        >
+          Blue
+        </button>
+        <button 
+          onClick={() => setSelectedColor('green')}
+          style={{ backgroundColor: 'green', color: 'white' }}
+        >
+          Green
+        </button>
+      </div>
+      
+      {/* Render ColorDisplay component */}
+      <ColorDisplay color={selectedColor} />
+    </div>
+  );
+}
+```
+
+## **Question 8: Timer Component**
+
+```javascript
+import React, { useState, useEffect } from 'react';
+
+export default function Timer() {
+  // Add state for timer value and running status
+  const [seconds, setSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  
+  // Add useEffect for interval management
+  useEffect(() => {
+    let interval = null;
+    
+    if (isRunning) {
+      interval = setInterval(() => {
+        setSeconds(prevSeconds => prevSeconds + 1);
+      }, 1000);
+    } else if (!isRunning && seconds !== 0) {
+      clearInterval(interval);
+    }
+    
+    return () => clearInterval(interval);
+  }, [isRunning, seconds]);
+  
+  // Add functions for start, stop, reset
+  const startTimer = () => {
+    setIsRunning(true);
+  };
+  
+  const stopTimer = () => {
+    setIsRunning(false);
+  };
+  
+  const resetTimer = () => {
+    setSeconds(0);
+    setIsRunning(false);
+  };
+  
+  return (
+    <div>
+      <h2>Timer</h2>
+      
+      {/* Display timer */}
+      <div style={{ fontSize: '4rem', fontWeight: 'bold' }}>
+        {seconds}
+      </div>
+      
+      {/* Add control buttons */}
+      <div>
+        <button onClick={startTimer}>Start</button>
+        <button onClick={stopTimer}>Stop</button>
+        <button onClick={resetTimer}>Reset</button>
+      </div>
+    </div>
+  );
+}
+```
+
+## **Question 9: User Settings Panel**
+
+```javascript
+import React, { useState } from 'react';
+
+export default function UserSettings() {
+  // Add state for each setting
+  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(false);
+  const [autoSave, setAutoSave] = useState(false);
+  
+  // Add toggle functions
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+  
+  const toggleNotifications = () => {
+    setNotifications(!notifications);
+  };
+  
+  const toggleAutoSave = () => {
+    setAutoSave(!autoSave);
+  };
+  
+  return (
+    <div>
+      <h2>User Settings</h2>
+      
+      {/* Display current settings */}
+      <div>
+        <h3>Current Settings:</h3>
+        <div>🌙 Dark Mode: {darkMode ? 'On' : 'Off'}</div>
+        <div>🔔 Notifications: {notifications ? 'On' : 'Off'}</div>
+        <div>💾 Auto-save: {autoSave ? 'On' : 'Off'}</div>
+      </div>
+      
+      {/* Add toggle controls */}
+      <div>
+        <div>
+          <label>
+            <input 
+              type="checkbox"
+              checked={darkMode}
+              onChange={toggleDarkMode}
+            />
+            🌙 Dark Mode
+          </label>
+        </div>
+        
+        <div>
+          <label>
+            <input 
+              type="checkbox"
+              checked={notifications}
+              onChange={toggleNotifications}
+            />
+            🔔 Notifications
+          </label>
+        </div>
+        
+        <div>
+          <label>
+            <input 
+              type="checkbox"
+              checked={autoSave}
+              onChange={toggleAutoSave}
+            />
+            💾 Auto-save
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## **Question 10: Shopping Cart Application**
+
+```javascript
+import React, { useState } from 'react';
+
+const products = [
+  { id: 1, name: 'Smartphone', price: 599 },
+  { id: 2, name: 'Headphones', price: 199 },
+  { id: 3, name: 'Tablet', price: 399 }
+];
+
+export default function ShoppingCart() {
+  // Add state for cart items
+  const [cartItems, setCartItems] = useState([]);
+  
+  // Add functions for cart management
+  const addToCart = (product) => {
+    const existingItem = cartItems.find(item => item.id === product.id);
+    
+    if (existingItem) {
+      setCartItems(cartItems.map(item =>
+        item.id === product.id 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCartItems([...cartItems, { ...product, quantity: 1 }]);
+    }
+  };
+  
+  const updateQuantity = (id, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(id);
+    } else {
+      setCartItems(cartItems.map(item =>
+        item.id === id 
+          ? { ...item, quantity: newQuantity }
+          : item
+      ));
+    }
+  };
+  
+  const removeFromCart = (id) => {
+    setCartItems(cartItems.filter(item => item.id !== id));
+  };
+  
+  // Calculate total
+  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  return (
+    <div>
+      <h2>Shopping Cart</h2>
+      
+      {/* Available products */}
+      <div>
+        <h3>Available Products</h3>
+        {products.map(product => (
+          <div key={product.id}>
+            <h4>{product.name}</h4>
+            <p>${product.price}</p>
+            <button onClick={() => addToCart(product)}>
+              Add to Cart
+            </button>
+          </div>
+        ))}
+      </div>
+      
+      {/* Cart items */}
+      <div>
+        <h3>Cart Items</h3>
+        {cartItems.length === 0 ? (
+          <p>Your cart is empty</p>
+        ) : (
+          cartItems.map(item => (
+            <div key={item.id}>
+              <h4>{item.name}</h4>
+              <p>${item.price} x {item.quantity}</p>
+              <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                -
+              </button>
+              <span>{item.quantity}</span>
+              <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                +
+              </button>
+              <button onClick={() => removeFromCart(item.id)}>
+                Remove
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+      
+      {/* Total */}
+      <div>
+        <h3>Total: ${total}</h3>
+      </div>
+    </div>
+  );
+}
+```
+
+## **Key Learning Points Covered:**
+
+### **React Fundamentals:**
+✅ **JSX Syntax** - Writing HTML-like syntax in JavaScript  
+✅ **Functional Components** - Modern React component structure  
+✅ **Props** - Passing data between components  
+✅ **State Management** - Using useState hook  
+✅ **Event Handling** - onClick, onChange, onSubmit  
+
+### **Advanced Concepts:**
+✅ **useEffect Hook** - Side effects and lifecycle management  
+✅ **Conditional Rendering** - Dynamic UI based on state  
+✅ **Lists & Keys** - Rendering dynamic arrays  
+✅ **Forms** - Controlled components and validation  
+✅ **Complex State** - Managing arrays and objects  
+
+### **Best Practices:**
+✅ **State Immutability** - Using spread operator and array methods  
+✅ **Event Prevention** - Using preventDefault() for forms  
+✅ **Cleanup** - Clearing intervals in useEffect  
+✅ **Component Composition** - Parent-child relationships  
+✅ **Unique Keys** - Proper list rendering  
+
+These solutions demonstrate progressive complexity from basic JSX to advanced state management, covering all essential React concepts for a complete course!Here's a complete set of 10 React course questions with all details:
+
+## **Question 1: Basic React Component**
+
+```json
+{
+  "title": "Hello World Component",
+  "description": "Create a simple React functional component that displays a welcome message and your name.",
+  "instructions": "Create a functional component that returns a div containing an h1 with 'Hello World' and a paragraph with 'Welcome to React!'",
+  "difficulty": "easy",
+  "category": "React Basics",
+  "timeLimit": 10,
+  "tags": ["jsx", "functional-component", "basic"],
+  "starterCode": "import React from 'react';\n\nexport default function HelloWorld() {\n  // Your code here\n  return (\n    <div>\n      {/* Add your JSX here */}\n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"padding: 20px; font-family: Arial, sans-serif; text-align: center; border: 1px solid #ddd; border-radius: 8px; background: white;\"><h1 style=\"color: #333; font-size: 2rem; margin-bottom: 15px;\">Hello World</h1><p style=\"color: #666; font-size: 1.2rem; margin: 0;\">Welcome to React!</p></div>",
+  "testCases": [
+    {
+      "name": "Contains H1 Element",
+      "description": "Component should render an h1 element with 'Hello World'",
+      "expectedBehavior": "The component renders an h1 tag containing the text 'Hello World'",
+      "weight": 40
+    },
+    {
+      "name": "Contains Welcome Paragraph",
+      "description": "Component should render a paragraph with welcome message",
+      "expectedBehavior": "The component renders a p tag containing 'Welcome to React!'",
+      "weight": 40
+    },
+    {
+      "name": "Proper JSX Structure",
+      "description": "Component should have proper div wrapper and JSX structure",
+      "expectedBehavior": "All elements are properly nested within a div container",
+      "weight": 20
+    }
+  ],
+  "hints": [
+    "Use JSX to create HTML-like elements inside the return statement",
+    "Remember to wrap multiple elements in a parent div",
+    "JSX uses className instead of class for CSS classes"
+  ]
+}
+```
+
+## **Question 2: Counter with useState**
+
+```json
+{
+  "title": "Interactive Counter",
+  "description": "Build a counter component using the useState hook with increment, decrement, and reset functionality.",
+  "instructions": "Create a counter that starts at 0 with three buttons: '+' to increment, '-' to decrement, and 'Reset' to set back to 0. Display the current count prominently.",
+  "difficulty": "easy",
+  "category": "React Hooks",
+  "timeLimit": 15,
+  "tags": ["useState", "events", "state-management"],
+  "starterCode": "import React, { useState } from 'react';\n\nexport default function Counter() {\n  // Add state for count\n  \n  // Add event handlers\n  \n  return (\n    <div>\n      {/* Display current count */}\n      \n      {/* Add increment button */}\n      \n      {/* Add decrement button */}\n      \n      {/* Add reset button */}\n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"text-align: center; padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 3px solid #4CAF50; border-radius: 15px; background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%); box-shadow: 0 10px 25px rgba(76, 175, 80, 0.2); max-width: 500px; margin: 20px auto;\"><h2 style=\"font-size: 2.5rem; color: #2e7d32; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); font-weight: bold;\">Count: <span style=\"color: #1b5e20; background: white; padding: 8px 16px; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);\">0</span></h2><div style=\"display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;\"><button style=\"background: linear-gradient(45deg, #4CAF50, #388e3c); color: white; border: none; padding: 15px 25px; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 12px; box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4); transition: all 0.3s ease; transform: translateY(0); min-width: 120px;\">+</button><button style=\"background: linear-gradient(45deg, #f44336, #d32f2f); color: white; border: none; padding: 15px 25px; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 12px; box-shadow: 0 6px 15px rgba(244, 67, 54, 0.4); transition: all 0.3s ease; transform: translateY(0); min-width: 120px;\">-</button><button style=\"background: linear-gradient(45deg, #008CBA, #0277bd); color: white; border: none; padding: 15px 25px; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 12px; box-shadow: 0 6px 15px rgba(0, 140, 186, 0.4); transition: all 0.3s ease; transform: translateY(0); min-width: 120px;\">Reset</button></div></div>",
+  "testCases": [
+    {
+      "name": "useState Implementation",
+      "description": "Component should use useState hook to manage counter state",
+      "expectedBehavior": "The component declares state using useState(0) and updates it properly",
+      "weight": 25
+    },
+    {
+      "name": "Count Display",
+      "description": "Component should display the current count value",
+      "expectedBehavior": "The current count value is displayed prominently, starting at 0",
+      "weight": 20
+    },
+    {
+      "name": "Increment Button",
+      "description": "Plus button should increase the count by 1",
+      "expectedBehavior": "Clicking the '+' button increments the counter by 1",
+      "weight": 20
+    },
+    {
+      "name": "Decrement Button",
+      "description": "Minus button should decrease the count by 1",
+      "expectedBehavior": "Clicking the '-' button decrements the counter by 1",
+      "weight": 20
+    },
+    {
+      "name": "Reset Functionality",
+      "description": "Reset button should set count back to 0",
+      "expectedBehavior": "Clicking 'Reset' sets the counter back to 0 regardless of current value",
+      "weight": 15
+    }
+  ],
+  "hints": [
+    "Use useState(0) to initialize the count state",
+    "Create separate functions for increment, decrement, and reset",
+    "Use onClick handlers to connect buttons to functions",
+    "Display the count using {count} in JSX"
+  ]
+}
+```
+
+## **Question 3: Todo List Application**
+
+```json
+{
+  "title": "Simple Todo List",
+  "description": "Create a todo list where users can add new todos and mark them as completed by clicking.",
+  "instructions": "Build a todo list with an input field, 'Add' button, and a list of todos. Users should be able to add new todos and click on existing todos to remove them.",
+  "difficulty": "medium",
+  "category": "State Management",
+  "timeLimit": 25,
+  "tags": ["useState", "arrays", "forms", "events"],
+  "starterCode": "import React, { useState } from 'react';\n\nexport default function TodoList() {\n  // Add state for todos array and input\n  \n  // Add function to handle adding todos\n  \n  // Add function to remove todos\n  \n  return (\n    <div>\n      <h2>My Todo List</h2>\n      \n      {/* Add input and button */}\n      \n      {/* Display list of todos */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 3px solid #673ab7; border-radius: 16px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); color: #4a148c; box-shadow: 0 12px 30px rgba(103, 58, 183, 0.3); max-width: 600px; margin: 20px auto;\"><h2 style=\"color: #4a148c; margin-bottom: 25px; text-align: center; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); font-weight: bold;\">My Todo List</h2><div style=\"margin-bottom: 25px; display: flex; gap: 12px; flex-wrap: wrap; background: white; padding: 20px; border-radius: 12px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);\"><input type=\"text\" placeholder=\"Add a new todo...\" style=\"flex: 1; min-width: 250px; padding: 15px 20px; border: 2px solid #ce93d8; border-radius: 25px; font-size: 16px; outline: none; transition: all 0.3s ease;\"><button style=\"background: linear-gradient(45deg, #9c27b0, #7b1fa2); color: white; border: none; padding: 15px 25px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 25px; box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4); transition: all 0.3s ease; white-space: nowrap;\">Add</button></div><ul style=\"list-style: none; padding: 0; margin: 0;\"><li style=\"padding: 15px 20px; margin-bottom: 10px; background: rgba(255,255,255,0.9); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; border-left: 4px solid #9c27b0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">Sample todo item - click to remove</li></ul></div>",
+  "testCases": [
+    {
+      "name": "State Management",
+      "description": "Component should manage todos array and input state",
+      "expectedBehavior": "Uses useState for both todos array and input field value",
+      "weight": 25
+    },
+    {
+      "name": "Add Todo Functionality",
+      "description": "Users should be able to add new todos",
+      "expectedBehavior": "Typing in input and clicking 'Add' adds new todo to the list",
+      "weight": 30
+    },
+    {
+      "name": "Display Todo List",
+      "description": "All todos should be displayed in a list format",
+      "expectedBehavior": "Todos are rendered as a list with each item clickable",
+      "weight": 20
+    },
+    {
+      "name": "Remove Todo Functionality",
+      "description": "Clicking on todos should remove them from the list",
+      "expectedBehavior": "Clicking on any todo item removes it from the list",
+      "weight": 25
+    }
+  ],
+  "hints": [
+    "Use useState for both todos array and input value",
+    "Use the map() method to render the list of todos",
+    "Use the filter() method to remove todos by index or id",
+    "Handle form submission to prevent page refresh"
+  ]
+}
+```
+
+## **Question 4: User Profile Form**
+
+```json
+{
+  "title": "User Profile Form",
+  "description": "Create a form component that collects user information and displays it below the form when submitted.",
+  "instructions": "Build a form with fields for name, email, and age. When submitted, display the entered information below the form. Include form validation.",
+  "difficulty": "medium",
+  "category": "Forms & Events",
+  "timeLimit": 20,
+  "tags": ["forms", "useState", "validation", "events"],
+  "starterCode": "import React, { useState } from 'react';\n\nexport default function UserProfile() {\n  // Add state for form fields\n  \n  // Add state for submitted data\n  \n  // Handle form submission\n  \n  // Handle input changes\n  \n  return (\n    <div>\n      <h2>User Profile Form</h2>\n      \n      {/* Add form with inputs */}\n      \n      {/* Display submitted data */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"padding: 35px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 3px solid #ff6b6b; border-radius: 20px; background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%); box-shadow: 0 15px 35px rgba(255, 107, 107, 0.2); max-width: 550px; margin: 20px auto;\"><h2 style=\"color: #c92a2a; margin-bottom: 30px; text-align: center; font-size: 2.4rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); font-weight: bold;\">User Profile Form</h2><form style=\"background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);\"><div style=\"margin-bottom: 25px;\"><label style=\"display: block; margin-bottom: 8px; font-weight: bold; color: #c92a2a; font-size: 16px;\">Name:</label><input type=\"text\" required style=\"width: 100%; padding: 15px 20px; border: 2px solid #ffb3b3; border-radius: 10px; font-size: 16px; transition: all 0.3s ease; box-sizing: border-box;\"></div><div style=\"margin-bottom: 25px;\"><label style=\"display: block; margin-bottom: 8px; font-weight: bold; color: #c92a2a; font-size: 16px;\">Email:</label><input type=\"email\" required style=\"width: 100%; padding: 15px 20px; border: 2px solid #ffb3b3; border-radius: 10px; font-size: 16px; transition: all 0.3s ease; box-sizing: border-box;\"></div><div style=\"margin-bottom: 30px;\"><label style=\"display: block; margin-bottom: 8px; font-weight: bold; color: #c92a2a; font-size: 16px;\">Age:</label><input type=\"number\" required style=\"width: 100%; padding: 15px 20px; border: 2px solid #ffb3b3; border-radius: 10px; font-size: 16px; transition: all 0.3s ease; box-sizing: border-box;\"></div><button type=\"submit\" style=\"width: 100%; background: linear-gradient(45deg, #ff6b6b, #ee5a52); color: white; border: none; padding: 18px 25px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 12px; box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4); transition: all 0.3s ease;\">Submit</button></form></div>",
+  "testCases": [
+    {
+      "name": "Form State Management",
+      "description": "Component should manage form input states",
+      "expectedBehavior": "Uses useState to manage name, email, and age input values",
+      "weight": 20
+    },
+    {
+      "name": "Form Inputs",
+      "description": "Form should have name, email, and age input fields",
+      "expectedBehavior": "Renders three labeled input fields with appropriate types",
+      "weight": 25
+    },
+    {
+      "name": "Form Submission",
+      "description": "Form should handle submission and prevent default behavior",
+      "expectedBehavior": "Form submission calls handler function and prevents page refresh",
+      "weight": 25
+    },
+    {
+      "name": "Data Display",
+      "description": "Submitted data should be displayed below the form",
+      "expectedBehavior": "After submission, user data is displayed in a formatted way",
+      "weight": 30
+    }
+  ],
+  "hints": [
+    "Use controlled components with value and onChange props",
+    "Use preventDefault() in form submission handler",
+    "Create separate state for form data and submitted data",
+    "Use input type='email' for email validation"
+  ]
+}
+```
+
+## **Question 5: Conditional Rendering**
+
+```json
+{
+  "title": "Login Status Display",
+  "description": "Create a component that shows different content based on login status with a toggle button.",
+  "instructions": "Display 'Welcome back!' with a logout button when logged in, or 'Please log in' with a login button when logged out. Include a toggle button to switch states.",
+  "difficulty": "easy",
+  "category": "Conditional Rendering",
+  "timeLimit": 15,
+  "tags": ["conditional-rendering", "useState", "jsx"],
+  "starterCode": "import React, { useState } from 'react';\n\nexport default function LoginStatus() {\n  // Add state for login status\n  \n  // Add toggle function\n  \n  return (\n    <div>\n      {/* Conditional rendering based on login status */}\n      \n      {/* Toggle button */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"text-align: center; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 2px solid #2196f3; border-radius: 15px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); max-width: 400px; margin: 20px auto; box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);\"><h2 style=\"color: #1565c0; margin-bottom: 20px; font-size: 1.8rem;\">Please log in</h2><button style=\"background: linear-gradient(45deg, #4caf50, #45a049); color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4); transition: all 0.3s ease;\">Login</button></div>",
+  "testCases": [
+    {
+      "name": "State Management",
+      "description": "Component should manage login status with useState",
+      "expectedBehavior": "Uses useState to track whether user is logged in or not",
+      "weight": 25
+    },
+    {
+      "name": "Conditional Content",
+      "description": "Different content should display based on login status",
+      "expectedBehavior": "Shows different messages for logged in vs logged out states",
+      "weight": 35
+    },
+    {
+      "name": "Toggle Functionality",
+      "description": "Button should toggle between login and logout",
+      "expectedBehavior": "Clicking the button switches between login/logout states",
+      "weight": 25
+    },
+    {
+      "name": "Button Labels",
+      "description": "Button text should change based on current state",
+      "expectedBehavior": "Button shows 'Login' when logged out and 'Logout' when logged in",
+      "weight": 15
+    }
+  ],
+  "hints": [
+    "Use boolean state for isLoggedIn",
+    "Use ternary operator or && for conditional rendering",
+    "Button text and onClick handler should change based on state",
+    "Consider using separate components for login/logout views"
+  ]
+}
+```
+
+## **Question 6: Dynamic List Rendering**
+
+```json
+{
+  "title": "Product Catalog",
+  "description": "Render a list of products with name, price, and category from an array of objects.",
+  "instructions": "Create a component that displays a list of products. Each product should show its name, price, and category in a card format. Include sample data.",
+  "difficulty": "medium",
+  "category": "Lists & Keys",
+  "timeLimit": 20,
+  "tags": ["map", "keys", "arrays", "objects"],
+  "starterCode": "import React from 'react';\n\nconst products = [\n  { id: 1, name: 'Laptop', price: 999, category: 'Electronics' },\n  { id: 2, name: 'Coffee Mug', price: 15, category: 'Kitchen' },\n  { id: 3, name: 'Book', price: 25, category: 'Education' }\n];\n\nexport default function ProductCatalog() {\n  return (\n    <div>\n      <h2>Product Catalog</h2>\n      \n      {/* Render products list */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 20px auto;\"><h2 style=\"color: #333; text-align: center; margin-bottom: 30px; font-size: 2.2rem;\">Product Catalog</h2><div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;\"><div style=\"border: 1px solid #ddd; border-radius: 12px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.3s ease;\"><h3 style=\"color: #495057; margin: 0 0 10px 0; font-size: 1.3rem;\">Laptop</h3><p style=\"color: #28a745; font-weight: bold; font-size: 1.2rem; margin: 5px 0;\">$999</p><span style=\"background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem;\">Electronics</span></div><div style=\"border: 1px solid #ddd; border-radius: 12px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.3s ease;\"><h3 style=\"color: #495057; margin: 0 0 10px 0; font-size: 1.3rem;\">Coffee Mug</h3><p style=\"color: #28a745; font-weight: bold; font-size: 1.2rem; margin: 5px 0;\">$15</p><span style=\"background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem;\">Kitchen</span></div><div style=\"border: 1px solid #ddd; border-radius: 12px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.3s ease;\"><h3 style=\"color: #495057; margin: 0 0 10px 0; font-size: 1.3rem;\">Book</h3><p style=\"color: #28a745; font-weight: bold; font-size: 1.2rem; margin: 5px 0;\">$25</p><span style=\"background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem;\">Education</span></div></div></div>",
+  "testCases": [
+    {
+      "name": "Array Mapping",
+      "description": "Component should use map() to render product list",
+      "expectedBehavior": "Uses products.map() to transform array into JSX elements",
+      "weight": 30
+    },
+    {
+      "name": "Product Information Display",
+      "description": "Each product should display name, price, and category",
+      "expectedBehavior": "Every product card shows name, price, and category clearly",
+      "weight": 30
+    },
+    {
+      "name": "Unique Keys",
+      "description": "Each list item should have a unique key prop",
+      "expectedBehavior": "Uses product.id or index as key for each mapped element",
+      "weight": 20
+    },
+    {
+      "name": "Card Layout",
+      "description": "Products should be displayed in card format",
+      "expectedBehavior": "Each product is contained in a styled card/container element",
+      "weight": 20
+    }
+  ],
+  "hints": [
+    "Use the map() method to iterate over the products array",
+    "Don't forget to add a unique 'key' prop to each list item",
+    "Access object properties using dot notation (product.name)",
+    "Consider using CSS-in-JS or className for styling cards"
+  ]
+}
+```
+
+## **Question 7: Parent-Child Communication**
+
+```json
+{
+  "title": "Color Picker Component",
+  "description": "Create a parent component with color buttons that change the background color of a child display component.",
+  "instructions": "Build a ColorPicker parent component that passes selected color to a ColorDisplay child component via props. Include buttons for red, blue, and green.",
+  "difficulty": "medium",
+  "category": "Props & Communication",
+  "timeLimit": 25,
+  "tags": ["props", "component-communication", "useState"],
+  "starterCode": "import React, { useState } from 'react';\n\n// Child component\nfunction ColorDisplay({ color }) {\n  // Display the selected color\n}\n\n// Parent component\nexport default function ColorPicker() {\n  // Add state for selected color\n  \n  return (\n    <div>\n      <h2>Color Picker</h2>\n      \n      {/* Add color buttons */}\n      \n      {/* Render ColorDisplay component */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; max-width: 500px; margin: 20px auto; border: 2px solid #6c757d; border-radius: 15px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);\"><h2 style=\"color: #343a40; margin-bottom: 25px; font-size: 2rem;\">Color Picker</h2><div style=\"margin-bottom: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;\"><button style=\"background: #dc3545; color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); transition: all 0.3s ease; min-width: 80px;\">Red</button><button style=\"background: #007bff; color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3); transition: all 0.3s ease; min-width: 80px;\">Blue</button><button style=\"background: #28a745; color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); transition: all 0.3s ease; min-width: 80px;\">Green</button></div><div style=\"width: 200px; height: 100px; margin: 0 auto; border: 2px solid #343a40; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: #343a40; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);\">Select a color</div></div>",
+  "testCases": [
+    {
+      "name": "Parent State Management",
+      "description": "Parent component should manage selected color state",
+      "expectedBehavior": "ColorPicker component uses useState to track selected color",
+      "weight": 25
+    },
+    {
+      "name": "Props Passing",
+      "description": "Parent should pass color prop to child component",
+      "expectedBehavior": "Selected color is passed as prop to ColorDisplay component",
+      "weight": 30
+    },
+    {
+      "name": "Color Buttons",
+      "description": "Should have buttons for red, blue, and green colors",
+      "expectedBehavior": "Three color buttons that update the selected color when clicked",
+      "weight": 25
+    },
+    {
+      "name": "Child Component Display",
+      "description": "Child component should display/use the received color prop",
+      "expectedBehavior": "ColorDisplay component shows the selected color visually",
+      "weight": 20
+    }
+  ],
+  "hints": [
+    "Define ColorDisplay as a separate component that receives props",
+    "Use props.color or destructured {color} in child component",
+    "Pass state from parent to child using props",
+    "Each button should update the parent's color state"
+  ]
+}
+```
+
+## **Question 8: useEffect Hook**
+
+```json
+{
+  "title": "Timer Component",
+  "description": "Create a timer that counts up from 0 using useEffect hook. Include start, stop, and reset functionality.",
+  "instructions": "Build a timer that automatically increments every second. Use useEffect to manage the interval. Include buttons to start, stop, and reset the timer.",
+  "difficulty": "hard",
+  "category": "React Hooks",
+  "timeLimit": 30,
+  "tags": ["useEffect", "useState", "intervals", "cleanup"],
+  "starterCode": "import React, { useState, useEffect } from 'react';\n\nexport default function Timer() {\n  // Add state for timer value and running status\n  \n  // Add useEffect for interval management\n  \n  // Add functions for start, stop, reset\n  \n  return (\n    <div>\n      <h2>Timer</h2>\n      \n      {/* Display timer */}\n      \n      {/* Add control buttons */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"text-align: center; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 3px solid #17a2b8; border-radius: 20px; background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); max-width: 400px; margin: 20px auto; box-shadow: 0 10px 25px rgba(23, 162, 184, 0.3);\"><h2 style=\"color: #0c5460; margin-bottom: 30px; font-size: 2.2rem;\">Timer</h2><div style=\"font-size: 4rem; font-weight: bold; color: #0c5460; margin-bottom: 30px; font-family: 'Courier New', monospace; background: white; padding: 20px; border-radius: 15px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);\">0</div><div style=\"display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;\"><button style=\"background: linear-gradient(45deg, #28a745, #20c997); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4); transition: all 0.3s ease;\">Start</button><button style=\"background: linear-gradient(45deg, #dc3545, #e74c3c); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4); transition: all 0.3s ease;\">Stop</button><button style=\"background: linear-gradient(45deg, #6c757d, #545b62); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4); transition: all 0.3s ease;\">Reset</button></div></div>",
+  "testCases": [
+    {
+      "name": "useEffect Implementation",
+      "description": "Component should use useEffect to manage timer interval",
+      "expectedBehavior": "Uses useEffect hook with proper dependency array and cleanup",
+      "weight": 30
+    },
+    {
+      "name": "Timer State Management",
+      "description": "Should manage timer value and running status with useState",
+      "expectedBehavior": "Uses separate state for timer value and isRunning boolean",
+      "weight": 20
+    },
+    {
+      "name": "Interval Functionality",
+      "description": "Timer should increment automatically when running",
+      "expectedBehavior": "Timer increments by 1 every second when started",
+      "weight": 25
+    },
+    {
+      "name": "Control Functions",
+      "description": "Start, stop, and reset buttons should work correctly",
+      "expectedBehavior": "Start begins timer, stop pauses it, reset sets to 0",
+      "weight": 25
+    }
+  ],
+  "hints": [
+    "Use setInterval inside useEffect to create the timer",
+    "Don't forget to clear the interval in useEffect cleanup function",
+    "Use a dependency array to control when useEffect runs",
+    "Consider using useRef to store the interval ID for cleanup"
+  ]
+}
+```
+
+## **Question 9: Multiple State Variables**
+
+```json
+{
+  "title": "User Settings Panel",
+  "description": "Create a settings panel that manages multiple user preferences using separate state variables.",
+  "instructions": "Build a panel with toggles for dark mode, notifications, and auto-save. Display current settings and allow users to toggle each setting independently.",
+  "difficulty": "medium",
+  "category": "State Management",
+  "timeLimit": 25,
+  "tags": ["useState", "multiple-state", "checkboxes", "objects"],
+  "starterCode": "import React, { useState } from 'react';\n\nexport default function UserSettings() {\n  // Add state for each setting\n  \n  // Add toggle functions\n  \n  return (\n    <div>\n      <h2>User Settings</h2>\n      \n      {/* Display current settings */}\n      \n      {/* Add toggle controls */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"padding: 35px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 2px solid #6f42c1; border-radius: 18px; background: linear-gradient(135deg, #f8f9ff 0%, #e6e6fa 100%); max-width: 500px; margin: 20px auto; box-shadow: 0 12px 30px rgba(111, 66, 193, 0.2);\"><h2 style=\"color: #6f42c1; text-align: center; margin-bottom: 30px; font-size: 2.3rem; font-weight: bold;\">User Settings</h2><div style=\"background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);\"><h3 style=\"color: #495057; margin-bottom: 15px; font-size: 1.3rem;\">Current Settings:</h3><div style=\"color: #6c757d; line-height: 1.8; font-size: 16px;\"><div>🌙 Dark Mode: <strong style=\"color: #dc3545;\">Off</strong></div><div>🔔 Notifications: <strong style=\"color: #dc3545;\">Off</strong></div><div>💾 Auto-save: <strong style=\"color: #dc3545;\">Off</strong></div></div></div><div style=\"space-y: 15px;\"><div style=\"display: flex; align-items: center; justify-content: between; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 12px;\"><label style=\"flex: 1; font-weight: 600; color: #495057; font-size: 16px;\">🌙 Dark Mode</label><input type=\"checkbox\" style=\"width: 20px; height: 20px; cursor: pointer;\"></div><div style=\"display: flex; align-items: center; justify-content: between; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 12px;\"><label style=\"flex: 1; font-weight: 600; color: #495057; font-size: 16px;\">🔔 Notifications</label><input type=\"checkbox\" style=\"width: 20px; height: 20px; cursor: pointer;\"></div><div style=\"display: flex; align-items: center; justify-content: between; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\"><label style=\"flex: 1; font-weight: 600; color: #495057; font-size: 16px;\">💾 Auto-save</label><input type=\"checkbox\" style=\"width: 20px; height: 20px; cursor: pointer;\"></div></div></div>",
+  "testCases": [
+    {
+      "name": "Multiple State Variables",
+      "description": "Component should manage separate state for each setting",
+      "expectedBehavior": "Uses separate useState hooks for darkMode, notifications, and autoSave",
+      "weight": 30
+    },
+    {
+      "name": "Settings Display",
+      "description": "Should display current state of all settings",
+      "expectedBehavior": "Shows current on/off status for each setting clearly",
+      "weight": 25
+    },
+    {
+      "name": "Toggle Functionality",
+      "description": "Each setting should toggle independently",
+      "expectedBehavior": "Changing one setting doesn't affect others",
+      "weight": 25
+    },
+    {
+      "name": "Checkbox Controls",
+      "description": "Should provide checkboxes or buttons to toggle settings",
+      "expectedBehavior": "Interactive controls for each setting that update state",
+      "weight": 20
+    }
+  ],
+  "hints": [
+    "Use separate useState hooks for each setting",
+    "Create individual toggle functions for each setting",
+    "Use checkboxes with checked and onChange props",
+    "Display settings status using conditional rendering or text"
+  ]
+}
+```
+
+## **Question 10: Shopping Cart (Advanced)**
+
+```json
+{
+  "title": "Shopping Cart Application",
+  "description": "Build a complete shopping cart with add/remove items, quantity management, and total calculation.",
+  "instructions": "Create a shopping cart that displays items, allows quantity changes, calculates totals, and handles adding/removing items. Include sample products.",
+  "difficulty": "hard",
+  "category": "Advanced State",
+  "timeLimit": 35,
+  "tags": ["complex-state", "arrays", "objects", "calculations"],
+  "starterCode": "import React, { useState } from 'react';\n\nconst products = [\n  { id: 1, name: 'Smartphone', price: 599 },\n  { id: 2, name: 'Headphones', price: 199 },\n  { id: 3, name: 'Tablet', price: 399 }\n];\n\nexport default function ShoppingCart() {\n  // Add state for cart items\n  \n  // Add functions for cart management\n  \n  // Calculate total\n  \n  return (\n    <div>\n      <h2>Shopping Cart</h2>\n      \n      {/* Available products */}\n      \n      {/* Cart items */}\n      \n      {/* Total */}\n      \n    </div>\n  );\n}",
+  "expectedOutput": "<div style=\"padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 700px; margin: 20px auto; border: 2px solid #28a745; border-radius: 20px; background: linear-gradient(135deg, #f8fff9 0%, #e8f5e9 100%); box-shadow: 0 15px 40px rgba(40, 167, 69, 0.2);\"><h2 style=\"color: #155724; text-align: center; margin-bottom: 35px; font-size: 2.5rem; font-weight: bold;\">Shopping Cart</h2><div style=\"margin-bottom: 35px;\"><h3 style=\"color: #28a745; margin-bottom: 20px; font-size: 1.8rem;\">Available Products</h3><div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;\"><div style=\"border: 1px solid #d4edda; border-radius: 10px; padding: 15px; background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1);\"><h4 style=\"margin: 0 0 10px 0; color: #495057;\">Smartphone</h4><p style=\"color: #28a745; font-weight: bold; margin: 5px 0;\">$599</p><button style=\"background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;\">Add to Cart</button></div><div style=\"border: 1px solid #d4edda; border-radius: 10px; padding: 15px; background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1);\"><h4 style=\"margin: 0 0 10px 0; color: #495057;\">Headphones</h4><p style=\"color: #28a745; font-weight: bold; margin: 5px 0;\">$199</p><button style=\"background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;\">Add to Cart</button></div><div style=\"border: 1px solid #d4edda; border-radius: 10px; padding: 15px; background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1);\"><h4 style=\"margin: 0 0 10px 0; color: #495057;\">Tablet</h4><p style=\"color: #28a745; font-weight: bold; margin: 5px 0;\">$399</p><button style=\"background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;\">Add to Cart</button></div></div></div><div style=\"background: white; border-radius: 15px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);\"><h3 style=\"color: #28a745; margin-bottom: 20px; font-size: 1.8rem;\">Cart Items</h3><div style=\"text-align: center; color: #6c757d; padding: 30px;\">Your cart is empty</div><div style=\"border-top: 2px solid #28a745; padding-top: 20px; margin-top: 20px;\"><div style=\"text-align: right; font-size: 1.5rem; font-weight: bold; color: #155724;\">Total: $0</div></div></div></div>",
+  "testCases": [
+    {
+      "name": "Cart State Management",
+      "description": "Component should manage cart items with complex state",
+      "expectedBehavior": "Uses useState to manage array of cart items with quantities",
+      "weight": 25
+    },
+    {
+      "name": "Add to Cart",
+      "description": "Should add items to cart or increase quantity if already present",
+      "expectedBehavior": "Clicking 'Add to Cart' adds item or increments existing quantity",
+      "weight": 25
+    },
+    {
+      "name": "Quantity Management",
+      "description": "Should allow increasing/decreasing item quantities",
+      "expectedBehavior": "Provides controls to change quantity of items in cart",
+      "weight": 20
+    },
+    {
+      "name": "Total Calculation",
+      "description": "Should calculate and display total cart value",
+      "expectedBehavior": "Shows accurate total based on item prices and quantities",
+      "weight": 20
+    },
+    {
+      "name": "Remove Items",
+      "description": "Should allow removing items from cart",
+      "expectedBehavior": "Provides way to remove items completely from cart",
+      "weight": 10
+    }
+  ],
+  "hints": [
+    "Use an array of objects to represent cart items with id, name, price, quantity",
+    "Check if item exists in cart before adding (use find() method)",
+    "Use map() to update quantities and filter() to remove items",
+    "Calculate total using reduce() method on cart items array"
+  ]
+}
+```
+
+These 10 questions provide a comprehensive React course covering:
+
+1. **Basic Components** - JSX and functional components
+2. **State Management** - useState hook basics
+3. **List Management** - Arrays and state manipulation
+4. **Forms** - Controlled components and form handling
+5. **Conditional Rendering** - Dynamic UI based on state
+6. **Lists & Keys** - Rendering dynamic lists
+7. **Props** - Parent-child communication
+8. **Side Effects** - useEffect hook and cleanup
+9. **Multiple State** - Managing complex component state
+10. **Advanced Application** - Complete application with complex state
+
+Each question includes proper starter code, expected HTML output that matches your CodeRunner's format, detailed test cases with weights, and helpful hints for students.
