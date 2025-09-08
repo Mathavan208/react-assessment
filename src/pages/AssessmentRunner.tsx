@@ -136,9 +136,13 @@ function AssessmentRunner() {
             setQuestionScores(new Array(questionsData.length).fill(0));
             setCompletedQuestions(new Array(questionsData.length).fill(false));
             
-            if (questionsData.length > 0) {
-              setTimeLeft(questionsData.timeLimit * 60);
-            }
+            // After setQuestions, setQuestionScores, setCompletedQuestions...
+if (questionsData.length > 0) {
+  const first = questionsData;
+  const secs = Number(first?.timeLimit ?? 0) * 60;
+  setTimeLeft(Number.isFinite(secs) ? secs : 0);
+}
+
 
             toast.success('✅ Assessment loaded successfully!', { id: 'loading' });
           } else {
@@ -179,10 +183,12 @@ function AssessmentRunner() {
   }, [timerActive, timeLeft]);
 
   const formatTime = useCallback((seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }, []);
+  const s = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  const mins = Math.floor(s / 60);
+  const secs = s % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}, []);
+
 
   const startTimer = useCallback(() => {
     setTimerActive(true);
@@ -351,15 +357,16 @@ function AssessmentRunner() {
       if (userProfile?.uid) {
         try {
        const userRef = doc(db, 'users', userProfile.uid);
-const completedDate = new Date().toISOString();
-await updateDoc(userRef, {
-[`assessmentsCompleted.${assessment.id}`]: {
+       const completedDate = new Date().toISOString();
+       const payload={
 completed: true,
 score: totalScore,
 completedDate,
 title: (assessment as any).title || 'React Assessment',
 totalQuestions: questions.length
-}
+};
+await updateDoc(userRef, {
+[`assessmentsCompleted.${assessment.id}`]:payload
 });
         } catch (userUpdateError) {
           console.warn('⚠️ Failed to update user profile, but submission was successful:', userUpdateError);
@@ -409,7 +416,7 @@ totalQuestions: questions.length
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
       const prevQuestion = questions[currentQuestionIndex - 1];
-      setTimeLeft(prevQuestion.timeLimit * 60);
+setTimeLeft(Math.max(0, Number(prevQuestion?.timeLimit ?? 0) * 60));
       setTimerActive(false);
       setShowHints(false);
       setTestResults(null);
@@ -421,8 +428,8 @@ totalQuestions: questions.length
   const goToNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
-      const nextQuestion = questions[currentQuestionIndex + 1];
-      setTimeLeft(nextQuestion.timeLimit * 60);
+     const nextQuestion = questions[currentQuestionIndex + 1];
+setTimeLeft(Math.max(0, Number(nextQuestion?.timeLimit ?? 0) * 60));
       setTimerActive(false);
       setShowHints(false);
       setTestResults(null);
