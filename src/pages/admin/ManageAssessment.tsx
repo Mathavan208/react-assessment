@@ -65,7 +65,7 @@ function ManageAssessments() {
     description: '',
     difficulty: 'easy',
     timeLimit: 60,
-    selectedQuestions: []
+    selectedQuestions: [],
   });
 
   useEffect(() => {
@@ -112,6 +112,7 @@ function ManageAssessments() {
         timeLimit: formData.timeLimit,
         questionIds: formData.selectedQuestions, // Store question IDs
         createdAt: serverTimestamp(),
+        courseId: 'react'
       };
 
       if (editingAssessment) {
