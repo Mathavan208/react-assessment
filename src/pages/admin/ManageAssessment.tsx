@@ -188,15 +188,15 @@ function ManageAssessments() {
   };
 
   const filteredAssessments = assessments.filter(assessment => {
-    const matchesSearch = assessment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assessment.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDifficulty = difficultyFilter === 'all' || assessment.difficulty === difficultyFilter;
+    const matchesSearch = assessment?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         assessment?.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDifficulty = difficultyFilter === 'all' || assessment?.difficulty === difficultyFilter;
     return matchesSearch && matchesDifficulty;
   });
 
   const filteredQuestions = questions.filter(question => {
-    return question.title.toLowerCase().includes(questionSearchTerm.toLowerCase()) ||
-           question.description.toLowerCase().includes(questionSearchTerm.toLowerCase());
+    return question?.title?.toLowerCase().includes(questionSearchTerm.toLowerCase()) ||
+           question?.description?.toLowerCase().includes(questionSearchTerm.toLowerCase());
   });
 
   const getTotalTimeLimit = () => {
