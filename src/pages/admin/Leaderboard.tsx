@@ -1,89 +1,38 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-  collection,
-  onSnapshot,
-  query,
-  where,
-  orderBy,
-} from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { type User } from '../../types';
-import {
-  Trophy,
-  Medal,
-  Award,
-  TrendingUp,
-  Calendar,
-  Target,
-  Users,
-  Star,
-  Crown,
-  Zap,
-} from 'lucide-react';
+import { Trophy, Medal, Award, Calendar, Target, Users, Star, Crown, Zap } from 'lucide-react';
 import { formatDate, formatRelativeTime } from '../../utils/helpers';
-
-interface CompletedEntry {
-  assessmentId: string;
-  score: number;
-  completedAt?: any; // Firestore Timestamp | string | number
-  createdAt?: any;   // optional legacy alias
-  submittedAt?: any; // optional legacy alias
-}
-
-interface LeaderboardEntry extends User {
-  rank: number;
-  recentSubmissions: number;
-  lastActive: string | number | Date;
-  completionRate: number;
-  averageScore: number;
-  badge: string;
-  derivedTotalScore: number;
-  derivedCompletedCount: number;
-}
 
 function Leaderboard() {
   const [participants, setParticipants] = useState<User[]>([]);
   const [totalAssessments, setTotalAssessments] = useState<number>(0);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [timeFilter, setTimeFilter] = useState<'all' | 'month' | 'week'>('all');
-  const [viewMode, setViewMode] = useState<'score' | 'submissions' | 'recent'>('score');
-
-  // Utility: normalize any Firestore Timestamp/string/number to ms
+  // Utility: coerce Firestore Timestamp | string | number | Date to ms
   const toMs = (v: any): number => {
     if (!v) return 0;
     if (typeof v === 'number') return v;
     if (typeof v === 'string') return new Date(v).getTime() || 0;
+    if (v instanceof Date) return v.getTime() || 0;
     if (typeof v?.toMillis === 'function') return v.toMillis() || 0;
     return 0;
   };
 
-  // Utility: get date from a completion entry
-  const completionDateMs = (entry: CompletedEntry): number => {
-    return (
-      toMs(entry.completedAt) ||
-      toMs(entry.submittedAt) ||
-      toMs(entry.createdAt)
-    );
-  };
-
-  // Listen to users (role == 'user'); orderBy can be createdAt (sorting later in code)
+  // Realtime users
   useEffect(() => {
-    const q = query(
-      collection(db, 'users'),
-      where('role', '==', 'user'),
-      orderBy('createdAt', 'desc')
-    );
+    const qUsers = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(
-      q,
-      snap => {
+      qUsers,
+      (snap) => {
         const items: User[] = [];
-        snap.forEach(d => items.push({ ...(d.data() as User) }));
+        snap.forEach((d) => items.push({ ...(d.data() as User) }));
         setParticipants(items);
         setLoading(false);
       },
-      err => {
+      (err) => {
         console.error('users onSnapshot error', err);
         setLoading(false);
       }
@@ -91,103 +40,82 @@ function Leaderboard() {
     return () => unsub();
   }, []);
 
-  // Listen to assessments to compute completion rate denominator
+  // Realtime assessments (optional denominator)
   useEffect(() => {
-    const q = query(collection(db, 'assessments'));
+    const qAsmt = query(collection(db, 'assessments'));
     const unsub = onSnapshot(
-      q,
-      snap => {
-        setTotalAssessments(snap.size);
-      },
-      err => console.error('assessments onSnapshot error', err)
+      qAsmt,
+      (snap) => setTotalAssessments(snap.size),
+      (err) => console.error('assessments onSnapshot error', err)
     );
     return () => unsub();
   }, []);
 
-  // Compute leaderboard whenever inputs change
+  // Build leaderboard for React course only
   useEffect(() => {
-    const now = Date.now();
-    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
-    const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+    const data = participants
+      .filter((u: any) => {
+        const arr = Array.isArray(u?.enrolledCourses) ? u.enrolledCourses : [];
+        const lower = arr.map((x: any) => String(x).toLowerCase());
+        return lower.includes('react');
+      })
+      .map((user: any) => {
+        // assessmentsCompleted is an object map keyed by assessmentId (per your screenshot)
+        const acRaw =
+          user?.assessmentsCompleted && typeof user.assessmentsCompleted === 'object'
+            ? user.assessmentsCompleted
+            : {};
 
-    const data: LeaderboardEntry[] = participants.map((user) => {
-      const completedRaw = Array.isArray(user.assessmentsCompleted)
-        ? (user.assessmentsCompleted as unknown as CompletedEntry[])
-        : [];
+        // Normalize into array of { assessmentId, title, score, completedDate }
+        const entries = Object.entries(acRaw).map(([assessmentId, val]: any) => {
+          const title = String(val?.title ?? '');
+          const score = Number(val?.score ?? 0) || 0;
+          const completedDate =
+            val?.completedDate ?? val?.completedAt ?? val?.submittedAt ?? val?.createdAt ?? null;
+          return { assessmentId, title, score, completedDate };
+        });
 
-      // Filter by time if completion timestamps exist
-      const filtered = completedRaw.filter((entry) => {
-        if (timeFilter === 'all') return true;
-        const ms = completionDateMs(entry);
-        if (!ms) return timeFilter === 'all';
-        if (timeFilter === 'week') return ms >= oneWeekAgo;
-        if (timeFilter === 'month') return ms >= oneMonthAgo;
-        return true;
+        // React-only entries by title
+        const reactEntries = entries.filter((e) => /react/i.test(String(e.title || '')));
+
+        // Best React score
+        const bestScore = reactEntries.reduce((max, e) => (e.score > max ? e.score : max), 0);
+
+        // Last active timestamp normalized to ISO string (avoids getTime on non-Date)
+        const lastMs = Math.max(
+          0,
+          ...entries.map((e) => toMs(e.completedDate)).filter(Boolean),
+          toMs(user?.updatedAt),
+          toMs(user?.lastActive),
+          toMs(user?.createdAt)
+        );
+        const lastActiveISO = lastMs ? new Date(lastMs).toISOString() : new Date().toISOString();
+
+        // Simple badge tiers
+        let badge = 'Beginner';
+        if (bestScore >= 90) badge = 'Expert';
+        else if (bestScore >= 75) badge = 'Advanced';
+        else if (bestScore >= 50) badge = 'Intermediate';
+
+        return {
+          ...user,
+          derivedTotalScore: bestScore,
+          derivedCompletedCount: reactEntries.length,
+          averageScore: bestScore,
+          completionRate: reactEntries.length > 0 ? 100 : 0,
+          recentSubmissions: reactEntries.length,
+          lastActive: lastActiveISO,
+          badge,
+          rank: 0,
+        };
       });
 
-      // Scores and counts
-      const sumAll = completedRaw.reduce((s, e) => s + (e.score || 0), 0);
-      const sumFiltered = filtered.reduce((s, e) => s + (e.score || 0), 0);
-      const avgFiltered =
-        filtered.length > 0 ? Math.round(sumFiltered / filtered.length) : 0;
+    // Sort by React score desc and rank
+    data.sort((a: any, b: any) => (b.derivedTotalScore || 0) - (a.derivedTotalScore || 0));
+    const ranked = data.map((e: any, i: number) => ({ ...e, rank: i + 1 }));
 
-      const lastMs = Math.max(
-        0,
-        ...completedRaw.map((e) => completionDateMs(e)).filter(Boolean),
-        toMs((user as any).updatedAt),
-        toMs((user as any).lastActive),
-        toMs(user.createdAt)
-      );
-
-      // Completion rate vs total assessments
-      const uniqueCompleted = new Set(
-        completedRaw.map((e) => e.assessmentId).filter(Boolean)
-      ).size;
-      const completionRate =
-        totalAssessments > 0
-          ? Math.round((uniqueCompleted / totalAssessments) * 100)
-          : 0;
-
-      // Badge logic based on derived totals
-      let badge = 'Beginner';
-      const derivedTotal = sumAll;
-      if (derivedTotal >= 500 && uniqueCompleted >= 5) badge = 'Expert';
-      else if (derivedTotal >= 300 && uniqueCompleted >= 3) badge = 'Advanced';
-      else if (derivedTotal >= 100 && uniqueCompleted >= 1) badge = 'Intermediate';
-
-      return {
-        ...user,
-        derivedTotalScore: derivedTotal,
-        derivedCompletedCount: uniqueCompleted,
-        rank: 0, // provisional, set after sorting
-        recentSubmissions: filtered.length, // activity per time filter
-        lastActive: lastMs || user.createdAt || new Date().toISOString(),
-        completionRate,
-        averageScore: avgFiltered,
-        badge,
-      };
-    });
-
-    // Sort by viewMode
-    let sorted = [...data];
-    switch (viewMode) {
-      case 'submissions':
-        sorted.sort((a, b) => b.recentSubmissions - a.recentSubmissions);
-        break;
-      case 'recent':
-        sorted.sort((a, b) => toMs(b.lastActive) - toMs(a.lastActive));
-        break;
-      case 'score':
-      default:
-        sorted.sort((a, b) => (b.derivedTotalScore || 0) - (a.derivedTotalScore || 0));
-        break;
-    }
-
-    // Assign rank after sorting
-    sorted = sorted.map((e, i) => ({ ...e, rank: i + 1 }));
-
-    setLeaderboard(sorted);
-  }, [participants, totalAssessments, timeFilter, viewMode]);
+    setLeaderboard(ranked);
+  }, [participants, totalAssessments]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -216,6 +144,7 @@ function Leaderboard() {
   };
 
   const topPerformers = leaderboard.slice(0, 3);
+
   const stats = {
     totalParticipants: leaderboard.length,
     averageScore:
@@ -226,9 +155,9 @@ function Leaderboard() {
           )
         : 0,
     activeThisWeek: leaderboard.filter(
-      (e) => toMs(e.lastActive) >= Date.now() - 7 * 24 * 60 * 60 * 1000
+      (e) => new Date(e.lastActive).getTime() >= Date.now() - 7 * 24 * 60 * 60 * 1000
     ).length,
-    topPerformerScore: leaderboard?.derivedTotalScore || 0,
+    topPerformerScore: leaderboard?.derivedTotalScore || 0, // fixed
   };
 
   if (loading) {
@@ -246,29 +175,9 @@ function Leaderboard() {
         <div>
           <h1 className="flex items-center text-2xl font-bold text-gray-900">
             <Trophy className="w-8 h-8 mr-3 text-yellow-500" />
-            Leaderboard
+            React Leaderboard
           </h1>
-          <p className="text-gray-600">Top performing students and their achievements</p>
-        </div>
-        <div className="flex space-x-3">
-          <select
-            value={timeFilter}
-            onChange={(e) => setTimeFilter(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option value="all">All Time</option>
-            <option value="month">This Month</option>
-            <option value="week">This Week</option>
-          </select>
-          <select
-            value={viewMode}
-            onChange={(e) => setViewMode(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option value="score">By Total Score</option>
-            <option value="submissions">By Activity</option>
-            <option value="recent">By Recency</option>
-          </select>
+          <p className="text-gray-600">Top scores from the React track</p>
         </div>
       </div>
 
@@ -329,24 +238,24 @@ function Leaderboard() {
           <h2 className="mb-6 text-xl font-bold text-center text-gray-900">🏆 Top Performers</h2>
           <div className="flex items-end justify-center space-x-8">
             {/* 2nd */}
-            {topPerformers[21] && (
+            {topPerformers[1] && (
               <div className="text-center">
                 <div className="p-6 mb-4 transition-transform transform bg-white rounded-lg shadow-lg hover:scale-105">
                   <div className="flex items-center justify-center w-16 h-16 mx-auto mb-3 bg-gray-400 rounded-full">
                     <span className="text-xl font-bold text-white">
-                      {topPerformers[21].name?.charAt(0)?.toUpperCase() || '?'}
+                      {topPerformers[1].name?.charAt(0)?.toUpperCase() || '?'}
                     </span>
                   </div>
-                  <h3 className="font-semibold text-gray-900">{topPerformers[21].name}</h3>
+                  <h3 className="font-semibold text-gray-900">{topPerformers[1].name}</h3>
                   <p className="mt-2 text-2xl font-bold text-gray-700">
-                    {topPerformers[21].derivedTotalScore}
+                    {topPerformers[1].derivedTotalScore}
                   </p>
                   <span
                     className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-2 border ${getBadgeColor(
-                      topPerformers[21].badge
+                      topPerformers[1].badge
                     )}`}
                   >
-                    {topPerformers[21].badge}
+                    {topPerformers[1].badge}
                   </span>
                 </div>
                 <div className="flex items-center justify-center w-20 h-24 bg-gray-400 rounded-t-lg">
@@ -357,50 +266,52 @@ function Leaderboard() {
             )}
 
             {/* 1st */}
-            <div className="text-center">
-              <div className="p-6 mb-4 transition-transform transform bg-white border-2 border-yellow-300 rounded-lg shadow-xl hover:scale-105">
-                <div className="flex items-center justify-center w-20 h-20 mx-auto mb-3 bg-yellow-500 rounded-full">
-                  <span className="text-2xl font-bold text-white">
-                    {topPerformers.name?.charAt(0)?.toUpperCase() || '?'}
+            {topPerformers && (
+              <div className="text-center">
+                <div className="p-6 mb-4 transition-transform transform bg-white border-2 border-yellow-300 rounded-lg shadow-xl hover:scale-105">
+                  <div className="flex items-center justify-center w-20 h-20 mx-auto mb-3 bg-yellow-500 rounded-full">
+                    <span className="text-2xl font-bold text-white">
+                      {topPerformers[0].name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">{topPerformers[0].name}</h3>
+                  <p className="mt-2 text-3xl font-bold text-yellow-600">
+                    {topPerformers[0].derivedTotalScore}
+                  </p>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 border ${getBadgeColor(
+                      topPerformers[0].badge
+                    )}`}
+                  >
+                    {topPerformers[0].badge}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">{topPerformers.name}</h3>
-                <p className="mt-2 text-3xl font-bold text-yellow-600">
-                  {topPerformers.derivedTotalScore}
-                </p>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 border ${getBadgeColor(
-                    topPerformers.badge
-                  )}`}
-                >
-                  {topPerformers.badge}
-                </span>
+                <div className="flex items-center justify-center w-20 h-32 bg-yellow-500 rounded-t-lg">
+                  <Crown className="w-10 h-10 text-white" />
+                </div>
+                <div className="px-4 py-2 font-bold text-white bg-yellow-600 rounded-b-lg">1st</div>
               </div>
-              <div className="flex items-center justify-center w-20 h-32 bg-yellow-500 rounded-t-lg">
-                <Crown className="w-10 h-10 text-white" />
-              </div>
-              <div className="px-4 py-2 font-bold text-white bg-yellow-600 rounded-b-lg">1st</div>
-            </div>
+            )}
 
             {/* 3rd */}
-            {topPerformers[22] && (
+            {topPerformers[2] && (
               <div className="text-center">
                 <div className="p-6 mb-4 transition-transform transform bg-white rounded-lg shadow-lg hover:scale-105">
                   <div className="flex items-center justify-center w-16 h-16 mx-auto mb-3 rounded-full bg-amber-600">
                     <span className="text-xl font-bold text-white">
-                      {topPerformers[22].name?.charAt(0)?.toUpperCase() || '?'}
+                      {topPerformers[2].name?.charAt(0)?.toUpperCase() || '?'}
                     </span>
                   </div>
-                  <h3 className="font-semibold text-gray-900">{topPerformers[22].name}</h3>
+                  <h3 className="font-semibold text-gray-900">{topPerformers[2].name}</h3>
                   <p className="mt-2 text-2xl font-bold text-amber-600">
-                    {topPerformers[22].derivedTotalScore}
+                    {topPerformers[2].derivedTotalScore}
                   </p>
                   <span
                     className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-2 border ${getBadgeColor(
-                      topPerformers[22].badge
+                      topPerformers[2].badge
                     )}`}
                   >
-                    {topPerformers[22].badge}
+                    {topPerformers[2].badge}
                   </span>
                 </div>
                 <div className="flex items-center justify-center w-20 h-20 rounded-t-lg bg-amber-600">
@@ -432,10 +343,7 @@ function Leaderboard() {
                   Badge
                 </th>
                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                  Total Score
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                  Avg Score
+                  React Score
                 </th>
                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                   Completed
@@ -447,7 +355,10 @@ function Leaderboard() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {leaderboard.map((entry) => (
-                <tr key={entry.uid} className={`hover:bg-gray-50 ${entry.rank <= 3 ? 'bg-yellow-50' : ''}`}>
+                <tr
+                  key={entry.uid}
+                  className={`hover:bg-gray-50 ${entry.rank <= 3 ? 'bg-yellow-50' : ''}`}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">{getRankIcon(entry.rank)}</div>
                   </td>
@@ -465,24 +376,24 @@ function Leaderboard() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getBadgeColor(entry.badge)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getBadgeColor(
+                        entry.badge
+                      )}`}
+                    >
                       {entry.badge}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <Star className="w-4 h-4 mr-1 text-yellow-400" />
-                      <span className="text-lg font-bold text-gray-900">{entry.derivedTotalScore || 0}</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        {entry.derivedTotalScore || 0}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900">{entry.averageScore}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {entry.derivedCompletedCount}
-                      <div className="text-xs text-gray-500">{entry.completionRate}% complete</div>
-                    </div>
+                    <span className="text-sm text-gray-900">{entry.derivedCompletedCount}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-500">
@@ -503,7 +414,9 @@ function Leaderboard() {
           <div className="py-12 text-center">
             <Trophy className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <h3 className="mb-2 text-lg font-medium text-gray-900">No participants yet</h3>
-            <p className="text-gray-600">The leaderboard will populate as students complete assessments.</p>
+            <p className="text-gray-600">
+              The leaderboard will populate as students complete React assessments.
+            </p>
           </div>
         )}
       </div>

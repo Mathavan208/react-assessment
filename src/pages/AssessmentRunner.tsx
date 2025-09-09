@@ -137,9 +137,11 @@ function AssessmentRunner() {
             setCompletedQuestions(new Array(questionsData.length).fill(false));
             
             // After setQuestions, setQuestionScores, setCompletedQuestions...
+// RIGHT
+console.log(questionsData);
 if (questionsData.length > 0) {
-  const first = questionsData;
-  const secs = Number(first?.timeLimit ?? 0) * 60;
+  const first = questionsData[0];
+  const secs = Math.max(0, Number(first?.timeLimit ?? 0) * 60);
   setTimeLeft(Number.isFinite(secs) ? secs : 0);
 }
 
@@ -167,22 +169,19 @@ if (questionsData.length > 0) {
 
   // Timer effect
   useEffect(() => {
-    if (timerActive && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            setTimerActive(false);
-            toast.error('⏰ Time is up for this question!', { duration: 4000 });
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [timerActive, timeLeft]);
+  if (timerActive && timeLeft > 0) {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { setTimerActive(false); toast.error('⏰ Time is up for this question!', { duration: 4000 }); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }
+}, [timerActive, timeLeft]);
 
-  const formatTime = useCallback((seconds: number) => {
+
+const formatTime = useCallback((seconds: number) => {
   const s = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
   const mins = Math.floor(s / 60);
   const secs = s % 60;
@@ -191,9 +190,15 @@ if (questionsData.length > 0) {
 
 
   const startTimer = useCallback(() => {
-    setTimerActive(true);
-    toast.success(`⏱️ Timer started! You have ${formatTime(timeLeft)} remaining.`, { duration: 3000 });
-  }, [timeLeft, formatTime]);
+  if (!Number.isFinite(timeLeft) || timeLeft <= 0) {
+    toast.error('⏰ Time limit missing for this question.');
+    return;
+  }
+  if (timerActive) return;
+  setTimerActive(true);
+  toast.success(`⏱️ Timer started! You have ${formatTime(timeLeft)} remaining.`, { duration: 3000 });
+}, [timeLeft, timerActive, formatTime]);
+
 
   const refreshExpectedOutput = useCallback(() => {
     toast.success('🔄 Expected output is now the rendered solution preview in CodeRunner', { duration: 2000 });
